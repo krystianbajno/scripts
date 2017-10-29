@@ -67,12 +67,10 @@ def establishSessionID():
          return httpResponse.reason
     
     
-
-
 def setPairingKey():
     pairingKeyBox = tkinter.Tk()
     pairingKeyBox.title("Set your pairing key!")
-    pairingKeyBox.geometry("200x180")
+    pairingKeyBox.geometry("200x280")
     pairingKeyBox.configure(bg='#111111')
     _keyLabel = tkinter.Label(pairingKeyBox, bg='#111111'  ,fg='#FFFFFF',text = 'Set correct pairing key')
     _keyLabel.pack(pady = 5)
@@ -82,6 +80,11 @@ def setPairingKey():
     def setKey():
         dictionary["pairingKey"] = pairingKey_toSet.get()
         pairingKeyBox.destroy()
+    def setBrute():
+            global lastnumber, endnumber
+            lastnumber = int(brutenumber_toSet.get())
+            endnumber = int(endnumber_toSet.get())
+            print("[*] Bruteforce config refreshed...")
     def justexit():
         pairingKeyBox.destroy()
         sys.exit("[*] Program has been closed correctly on user request. Goodbye!")
@@ -101,6 +104,8 @@ def setPairingKey():
                 if sessionID == "Unauthorized":
                     print("[*] Invalid key, continuing...")
                     lastnumber = lastnumber+1
+                    brutenumber_toSet.delete(0, tkinter.END)
+                    brutenumber_toSet.insert(0, lastnumber)
                     sleep(0.01)
                 else:
                     print("-----------------------------------------------")
@@ -124,6 +129,16 @@ def setPairingKey():
     _bruteforceButton = tkinter.Button(pairingKeyBox,bg='#111111'  ,fg='#FFFFFF', text="BRUTEFORCE!", command=bruteforce)
     _enterButton.pack(pady = 5)
     _bruteforceButton.pack(pady = 5)
+    brutenumber_toSet = tkinter.Entry(pairingKeyBox, bg='#111111'  ,fg='#FFFFFF',bd=1)
+    brutenumber_toSet.pack(pady = 5)
+    brutenumber_toSet.delete(0, tkinter.END)
+    brutenumber_toSet.insert(0, lastnumber)
+    endnumber_toSet = tkinter.Entry(pairingKeyBox, bg='#111111'  ,fg='#FFFFFF',bd=1)
+    endnumber_toSet.pack(pady = 5)
+    endnumber_toSet.delete(0, tkinter.END)
+    endnumber_toSet.insert(0, endnumber)
+    _bruteforceSet = tkinter.Button(pairingKeyBox,bg='#111111'  ,fg='#FFFFFF', text="BRUTEFORCE SET", command=setBrute)
+    _bruteforceSet.pack(pady = 5)
     _exitButton.pack(pady = 5)
     pairingKeyBox.mainloop()
 
@@ -394,7 +409,7 @@ def printhelp():
     print('15 - RIGHT key')
     print('20 - OK')
     print('21 - Home menu')
-    print('22 - Menu key (same with Home menu key)')
+    print('22 - Menu key')
     print('23 - Back')
     print('24 - Volume up')
     print('25 - Volume down')
@@ -413,7 +428,7 @@ def printhelp():
     print('38 - Skip Forward')
     print('39 - Skip Backward')
     print('40 - Record')
-    print('41 - Recording list')
+    print('41 - Recordings list')
     print('42 - Repeat')
     print('43 - Live TV')
     print('44 - EPG')
