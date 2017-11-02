@@ -9,3 +9,5 @@ This script assumes you have dhcpd, systemd, iproute2 and iptables.
 # connection_restart.sh  
 ### Its purpose is to completely drop and restart the connection to the defaults.  
 This script assumes you have systemd, systemd-networkd running a wpa_supplicant service and iproute2 (for example Arch Linux).  
+
+approved by Piotr Świerszcz
