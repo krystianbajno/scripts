@@ -1,0 +1,53 @@
+#!/bin/bash
+## This script sends alerts on low battery.
+### Specify username
+USERNAMEIS="krystian"
+LOGGEDUSERSUID="1000"
+### export XAUTHORITY
+export XAUTHORITY=/home/$USERNAMEIS/.Xauthority
+### export DISPLAY
+export DISPLAY=:0
+### export DBUS_SESSION_BUS_ADDRESS with user UID
+export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$LOGGEDUSERSUID/bus"
+while true;
+do	
+	BATTERY_PERCENTAGE=$(upower -d | grep -P -o '[0-9]+(?=%)' -m 1) #second method - #acpi -b | grep "Battery 0" | awk '{print $4}' | cut -d '%' -f1)
+	if [[ "$BATTERY_PERCENTAGE" -gt "10" ]]; then
+		BUFFER="BLUE"
+	fi
+    CABLE=$(upower -d | grep -n2 line-power | grep online | awk '{ print $3 }')
+	if [[ "$BATTERY_PERCENTAGE" -lt "10" ]] && [[ $CABLE == "no" ]] && [[ "$BUFFER" == "BLUE" ]]; then
+		sudo -u krystian DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /usr/bin/notify-send --urgency=normal "INFO: Battery is 10%"  "$(date): Battery is getting low. Plug in your power cable." 
+		sudo -u krystian DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus paplay --server /run/user/1000/pulse/native /usr/share/sounds/audio/notifications/Titan.wav 2&> /dev/null
+		BUFFER="RED"
+	fi
+
+
+
+	if [[ "$BATTERY_PERCENTAGE" -lt "10" && "$BATTERY_PERCENTAGE" -gt "3" ]]; then
+		BUFFER="RED"
+	fi	
+    if [[ "$BATTERY_PERCENTAGE" -le "3" && $CABLE == "no" && $BUFFER == "RED" ]]; then
+		sudo -u krystian DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /usr/bin/notify-send --urgency=critical "WARNING: Battery is about to die"  "$(date): Plug in the power cable, or save your work NOW." 
+		sudo -u krystian DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus paplay --server /run/user/1000/pulse/native /usr/share/sounds/audio/ui/LowBattery.wav 2&> /dev/null 
+		BUFFER="GREEN"
+	fi
+
+	sleep 60
+
+done
+
+### systemd service
+<<COMMENT
+[Unit]
+Description=Send alerts on low battery
+
+[Service]
+User=krystian
+Group=users
+Environment="DISPLAY=:0" "XAUTHORITY=/home/krystian/.Xauthority"
+Type=simple
+ExecStart= /bin/bash /home/krystian/.config/scripts/low_battery &
+[Install]
+WantedBy=multi-user.target
+COMMENT

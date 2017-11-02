@@ -1,0 +1,40 @@
+#!/bin/bash
+## This script sends alerts on cable plug in-out.
+#By Krystian Bajno, 2017
+
+#Needs xpub, pulseaudio
+
+USERNAMEIS="krystian"
+LOGGEDUSERSUID="1000"
+PLUGIN="/usr/share/sounds/./freedesktop/stereo/power-plug.wav"
+PLUGOUT="/usr/share/sounds/./freedesktop/stereo/power-unplug.wav"
+export XAUTHORITY=/home/$krystian/.Xauthority
+export DISPLAY=:0
+export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$LOGGEDUSERSUID/bus"
+
+if [ $1 == "D" ]; then
+	 notify-send --urgency=low "$(date)" "Power cable plugged in" 
+	 paplay --server /run/user/$LOGGEDUSERSUID/pulse/native $PLUGIN
+fi
+if [ $1 == "E" ]; then
+ notify-send --urgency=low "$(date)" "Power cable plugged out"
+ paplay --server /run/user/$LOGGEDUSERSUID/pulse/native $PLUGOUT
+fi
+
+
+# /etc/udev/rules.d/99-battery.rules
+<<COMMENT
+SUBSYSTEM=="power_supply", ACTION=="change", \
+ENV{POWER_SUPPLY_ONLINE}=="0", ENV{POWER}="off", \
+OPTIONS+="last_rule", \
+IMPORT{program}="/usr/bin/xpub", \
+RUN+="/bin/su $env{XUSER} -c '/home/krystian/.config/scripts/battery-notifications E'"
+
+SUBSYSTEM=="power_supply", ACTION=="change", \
+ENV{POWER_SUPPLY_ONLINE}=="1", ENV{POWER}="on", \
+OPTIONS+="last_rule", \
+IMPORT{program}="/usr/bin/xpub", \
+RUN+="/bin/su $env{XUSER} -c '/home/krystian/.config/scripts/battery-notifications D'"
+COMMENT
+
+
