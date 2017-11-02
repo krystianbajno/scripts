@@ -1,7 +1,5 @@
 #!/bin/bash
-## This script assumes you use systemd, systemd-newtorkd, iptables, iproute2, dhcpd and hostapd.
-## Modify it if you dont meet the dependencies.
-## It will create NAT'ed AP using one, or two interfaces.
+# Creates the access point with forwarded NAT.
 ### By Krystian Bajno, 2017
 
 ###Settings

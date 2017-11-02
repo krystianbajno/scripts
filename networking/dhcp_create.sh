@@ -1,9 +1,9 @@
 #!/bin/bash
-### This script assumes you have dhcpd, systemd, iproute2 and iptables.
-### This script creates redirected DHCP network behind a NAT to use for network troubleshooting, file transfers etc.
+# Creates forwarded NAT network with DHCP.
 ### By Krystian Bajno, 2017
 
 ### Privileges check. Change UID after -ne in case there is another user.
+
 if [ "$EUID" -ne 0 ];
 	then echo "[*] Run it as a privileged user."
 	exit

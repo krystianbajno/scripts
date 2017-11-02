@@ -1,7 +1,7 @@
 #!/bin/bash
-### This script assumes you have systemd, systemd-networkd running a wpa_supplicant service and iproute2 (for example Arch Linux).
-### Its purpose is to completely drop and restart the connection to the defaults no matter what.
+# Drops and restarts the connection to defaults.  
 ### By Krystian Bajno, 2017
+
 if [ "$EUID" -ne 0 ];
 	then echo "Run as a privileged user."
 	exit
