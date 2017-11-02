@@ -140,7 +140,7 @@ wpa=2" > /etc/hostapd/hostapd.conf
 
 echo [*] Listing interfaces:
 ls /sys/class/net
-echo [*] Specify forwarding interface with connection to network:
+echo [*] Specify forwarding interface with connection to external network:
 read interface
 ### Check if exists
 if [[ "$(ip link | grep $interface >/dev/null; echo $?)" -ne 0 ]]; then
@@ -176,7 +176,7 @@ if [[ "$(ip route | grep $interface >/dev/null; echo $?)" -eq 0 ]]; then
 #In case no connection on interface
 else
 		echo [*] There is no existing connection on specified interface!
-    	echo "[*] Do you wish to continue without the forwarding? You will lose internet connection! y/n"
+    	echo "[*] Do you wish to continue without the forwarding? y/n"
     	read respond
 		if [[ "$respond" == "y" || "$respond" == "Y" ]]
 			then
@@ -195,7 +195,7 @@ else
 				fi
 
 		else
-			echo "[*] Understood."
+			echo "[*] Closing."
 			cleanItUp
 			exit
 		fi
@@ -203,7 +203,7 @@ else
 fi
 sleep 1
 echo "..."
-read -p "[*] Press any key to continue and clean"
+read -p "[*] Press any key to continue and clean."
 cleanItUp
 exit 
 
