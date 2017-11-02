@@ -40,7 +40,6 @@ def connectHTTP():
 
 def displayPairingKey():
     httpConnection = connectHTTP()
-    authKeyRequest = "<!--?xml version=\"1.0\" encoding=\"utf-8\"?--><auth><type>AuthKeyReq</type></auth>"
     httpConnection.request("POST", "/roap/api/auth", "<!--?xml version=\"1.0\" encoding=\"utf-8\"?--><auth><type>AuthKeyReq</type></auth>", headers={"Content-Type": "application/atom+xml"})
     httpResponse = httpConnection.getresponse()
     if httpResponse.reason != "OK" :

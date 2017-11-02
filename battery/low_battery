@@ -1,5 +1,7 @@
 #!/bin/bash
 ## This script sends alerts on low battery.
+### By Krystian Bajno, 2017
+
 ### Specify username
 USERNAMEIS="krystian"
 LOGGEDUSERSUID="1000"
@@ -17,8 +19,8 @@ do
 	fi
     CABLE=$(upower -d | grep -n2 line-power | grep online | awk '{ print $3 }')
 	if [[ "$BATTERY_PERCENTAGE" -lt "10" ]] && [[ $CABLE == "no" ]] && [[ "$BUFFER" == "BLUE" ]]; then
-		sudo -u krystian DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /usr/bin/notify-send --urgency=normal "INFO: Battery is 10%"  "$(date): Battery is getting low. Plug in your power cable." 
-		sudo -u krystian DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus paplay --server /run/user/1000/pulse/native /usr/share/sounds/audio/notifications/Titan.wav 2&> /dev/null
+		sudo -u $USERNAMEIS DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$LOGGEDUSERSUID/bus /usr/bin/notify-send --urgency=normal "INFO: Battery is 10%"  "$(date): Battery is getting low. Plug in your power cable." 
+		sudo -u $USERNAMEIS DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$LOGGEDUSERSUID/bus paplay --server /run/user/$LOGGEDUSERSUID/pulse/native /usr/share/sounds/audio/notifications/Titan.wav 2&> /dev/null
 		BUFFER="RED"
 	fi
 
@@ -28,8 +30,8 @@ do
 		BUFFER="RED"
 	fi	
     if [[ "$BATTERY_PERCENTAGE" -le "3" && $CABLE == "no" && $BUFFER == "RED" ]]; then
-		sudo -u krystian DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus /usr/bin/notify-send --urgency=critical "WARNING: Battery is about to die"  "$(date): Plug in the power cable, or save your work NOW." 
-		sudo -u krystian DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus paplay --server /run/user/1000/pulse/native /usr/share/sounds/audio/ui/LowBattery.wav 2&> /dev/null 
+		sudo -u $USERNAMEIS DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$LOGGEDUSERSUID/bus /usr/bin/notify-send --urgency=critical "WARNING: Battery is about to die"  "$(date): Plug in the power cable, or save your work NOW." 
+		sudo -u $USERNAMEIS DISPLAY=:0 DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$LOGGEDUSERSUID/bus paplay --server /run/user/$LOGGEDUSERSUID/pulse/native /usr/share/sounds/audio/ui/LowBattery.wav 2&> /dev/null 
 		BUFFER="GREEN"
 	fi
 
