@@ -9,8 +9,8 @@
 
 # Dependencies:  
 ## ap_create:  
->systemd, systemd-networkd, iptables, iproute2, dhcpd, hostapd.* 
+>systemd, systemd-networkd, iptables, iproute2, dhcpd, hostapd.
 ## dhcp_create:
->systemd, dhcpd, iproute2 and iptables.
+>systemd, dhcpd, iproute2, iptables.
 ## connection_restart.sh
 >systemd, systemd-networkd, iproute2.
