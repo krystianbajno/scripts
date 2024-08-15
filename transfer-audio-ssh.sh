@@ -1,4 +1,4 @@
-# ----------------------------------------------
+# -----------------------------------------------
 # Collect audio from remote microphone and play it locally
 
 # local is MAC OS remote is LINUX:
