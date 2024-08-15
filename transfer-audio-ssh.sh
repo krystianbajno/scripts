@@ -1,5 +1,5 @@
 # -----------------------------------------------
-# Collect audio from remote microphone and play it locally
+# Collect audio from remote and play it locally
 
 # local is MAC OS remote is LINUX:
 ssh -C pwn@pwn "arecord -f cd -" | play -t raw -b 16 -c 2 -e signed-integer -r 44100 -
@@ -17,7 +17,7 @@ ssh -C pwn@pwn "ffmpeg -f dshow -i audio='Microphone (Realtek High Definition Au
 ssh -C pwn@pwn "rec -t raw -b 16 -c 2 -e signed-integer -r 44100 -" | aplay
 
 # ---------------------------------------------
-# Collect audio from local microphone and play it remotely
+# Collect audio from local and play it remotely
 
 # local is MACOS remote is LINUX
 rec -t raw -b 16 -c 2 -e signed-integer -r 44100 - | ssh -C pwn@pwn "aplay -f cd"
