@@ -3,6 +3,7 @@
 
 # local is MAC OS remote is LINUX:
 ssh -C pwn@pwn "arecord -f cd -" | play -t raw -b 16 -c 2 -e signed-integer -r 44100 -
+ssh -C -i id_rsa_pwn pwn@pwn "arecord -f cd -" | sox -t raw -b 16 -c 2 -e signed-integer -r 44100 - -t coreaudio "BlackHole 2ch"
 
 # local is WINDOWS remote is LINUX
 ssh -C pwn@pwn "arecord -f cd -" | ffmpeg -f s16le -ar 44100 -ac 2 -i - -f wav pipe:1 | ffplay -
