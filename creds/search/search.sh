@@ -1,0 +1,1 @@
+xargs -d '\n' -a search_list -I{} rg "$@" --mmap -z -j 1000 -H -a -i "{}"
