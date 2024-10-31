@@ -20,13 +20,13 @@ const Virustotal = () => ({
             const info = VirustotalHelper().get().info()
         },
         detections: () => {
-            const detections = VirustotalHelper().get().info()
+            const detections = VirustotalHelper().get().detections()
         },
         behavior: () => {
-            const behavior = VirustotalHelper().get().info()
+            const behavior = VirustotalHelper().get().behavior()
         },
         details: () => {
-            const details = VirustotalHelper().get().info()
+            const details = VirustotalHelper().get().details()
         },
         all: () => {
             const info = VirustotalHelper().get().info()

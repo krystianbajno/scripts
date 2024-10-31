@@ -1,16 +1,18 @@
 #!/bin/bash
+# source malware_analysis.sh
+# run_malware_analysis $tgtPath $resPath
 
 patterns=("HKEY_LOCAL_MACHINE\\Software\\Microsoft" \
     "http[s]?://[a-zA-Z0-9\.-]+\.[a-zA-Z]{2,6}" \
     "C:\\Windows\\System32")
 
-Get_URLs() {
+get_url() {
     local DirectoryPath="${1:-/path/to/files}"
     local OutputPath="${2:-url_output.txt}"
 
     find "$DirectoryPath" -type f | while read -r file; do
         echo "Checking file for URLs: $file"
-        results=$(strings "$file" | grep -Eo 'http[s]?://[a-zA-Z0-9\.-]+\.[a-zA-Z]{2,6}')
+        results=$(strings "$file" | grep -E 'http[s]?://[a-zA-Z0-9\.-]+\.[a-zA-Z]{2,6}')
         if [[ -n "$results" ]]; then
             echo "===== $file =====" >> "$OutputPath"
             echo "$results" >> "$OutputPath"
@@ -18,10 +20,9 @@ Get_URLs() {
     done
 }
 
-Get_SuspiciousStrings() {
+get_sus() {
     local DirectoryPath="${1:-/path/to/files}"
     local OutputPath="${2:-suspicious_strings.txt}"
-    local 
 
     find "$DirectoryPath" -type f | while read -r file; do
         echo "Analyzing file: $file"
@@ -36,7 +37,7 @@ Get_SuspiciousStrings() {
     done
 }
 
-Get_FileHashes() {
+get_hash() {
     local DirectoryPath="${1:-/path/to/files}"
     local OutputPath="${2:-hash_output.txt}"
 
@@ -53,13 +54,13 @@ Get_FileHashes() {
     done
 }
 
-Get_IPAddresses() {
+get_ip() {
     local DirectoryPath="${1:-/path/to/files}"
     local OutputPath="${2:-ip_output.txt}"
 
     find "$DirectoryPath" -type f | while read -r file; do
         echo "Processing file: $file"
-        results=$(strings "$file" | grep -Eo '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b')
+        results=$(strings "$file" | grep -E '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b')
         if [[ -n "$results" ]]; then
             echo "===== $file =====" >> "$OutputPath"
             echo "$results" >> "$OutputPath"
@@ -67,13 +68,13 @@ Get_IPAddresses() {
     done
 }
 
-Get_DNSStrings() {
+get_dns() {
     local DirectoryPath="${1:-/path/to/files}"
     local OutputPath="${2:-dns_output.txt}"
 
     find "$DirectoryPath" -type f | while read -r file; do
         echo "Processing file: $file"
-        results=$(strings "$file" | grep -E '^[a-zA-Z\-0-9\.]+\.[a-z]+$')
+        results=$(strings "$file" | grep -E '[a-zA-Z0-9\.-]+\.[a-zA-Z]{2,6}')
         if [[ -n "$results" ]]; then
             echo "===== $file =====" >> "$OutputPath"
             echo "$results" >> "$OutputPath"
@@ -81,7 +82,7 @@ Get_DNSStrings() {
     done
 }
 
-Run_MalwareAnalysis() {
+run_premalanal() {
     local TargetDirectory="${1:-/path/to/malware/samples}"
     local ResultsDirectory="${2:-/path/to/results}"
 
@@ -98,13 +99,14 @@ Run_MalwareAnalysis() {
     local suspiciousOutputPath="$ResultsDirectory/suspicious_results.txt"
     local urlOutputPath="$ResultsDirectory/url_results.txt"
 
-    Get_DNSStrings "$TargetDirectory" "$dnsOutputPath"
-    Get_IPAddresses "$TargetDirectory" "$ipOutputPath"
-    Get_FileHashes "$TargetDirectory" "$hashOutputPath"
-    Get_SuspiciousStrings "$TargetDirectory" "$suspiciousOutputPath"
-    Get_URLs "$TargetDirectory" "$urlOutputPath"
+    get_dns "$TargetDirectory" "$dnsOutputPath"
+    get_ip "$TargetDirectory" "$ipOutputPath"
+    get_hash "$TargetDirectory" "$hashOutputPath"
+    get_sus "$TargetDirectory" "$suspiciousOutputPath"
+    get_url "$TargetDirectory" "$urlOutputPath"
 
     echo "Malware analysis completed. Results saved in $ResultsDirectory."
 }
 
-Run_MalwareAnalysis $1 $2
+# source malanal.sh
+# run_premalanal $tgtPath $resPath

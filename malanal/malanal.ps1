@@ -1,3 +1,6 @@
+# . .\malanal.ps1
+# run-premalanal -TargetDirectory "C:\Malware\Samples" -ResultsDirectory "C:\Malware\AnalysisResults"
+
 $SysinternalsSuiteStringsPath = "C:\Tools\SysinternalsSuite\strings.exe"
 
 $SuspiciousPatterns = @(
@@ -97,6 +100,27 @@ function Get-IPAddresses {
     }
 }
 
+function Get-IPAddresses {
+    param (
+        [string]$DirectoryPath = "C:\Path\To\Files",
+        [string]$OutputPath = "ip_output.txt"
+    )
+    
+    if (!(Test-Path -Path $DirectoryPath)) {
+        Write-Host "Directory not found: $DirectoryPath"
+        return
+    }
+
+    Get-ChildItem -Path $DirectoryPath -Recurse | ForEach-Object {
+        Write-Host "Processing file: $($_.FullName)"
+        $results = & $SysinternalsSuiteStringsPath $_.FullName | 
+                    Where-Object { $_ -match '\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b' }
+        if ($results) {
+            Add-Content -Path $OutputPath -Value "===== $($_.FullName) ====="
+            $results | ForEach-Object { Add-Content -Path $OutputPath -Value $_ }
+        }
+    }
+}
 
 function Get-DNSStrings {
     param (
@@ -121,7 +145,7 @@ function Get-DNSStrings {
 }
 
 
-function Run-MalwareAnalysis {
+function Run-PreMalanal {
     param (
         [string]$TargetDirectory = "C:\Path\To\Malware\Samples",
         [string]$ResultsDirectory = "C:\Path\To\Results"
@@ -150,5 +174,6 @@ function Run-MalwareAnalysis {
 
     Write-Host "Malware analysis completed. Results saved in $ResultsDirectory."
 }
-# . .\Run-MalwareAnalysis.ps1
-# Run-MalwareAnalysis -TargetDirectory "C:\Malware\Samples" -ResultsDirectory "C:\Malware\AnalysisResults"
+
+# . .\malanal.ps1
+# run-premalanal -TargetDirectory "C:\Malware\Samples" -ResultsDirectory "C:\Malware\AnalysisResults"
