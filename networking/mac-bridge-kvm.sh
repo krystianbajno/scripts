@@ -1,33 +1,34 @@
 #!/bin/bash
 
 # Variables
-BRIDGE_NAME="br0"  # Name of the bridge
+BRIDGE_NAME="br0"  # Bridge interface name
 VM_NAME="your_vm_name"  # Replace with your VM name
-SPECIFIED_MAC="00:11:22:33:44:55"  # Replace with your desired MAC address for the VM
-HOST_INTERFACE="eth0"  # Replace with your actual host network interface
-BACKUP_DIR="/var/backups/kvm-config"  # Directory to store backups
+SPECIFIED_MAC="00:11:22:33:44:55"  # Replace with desired VM MAC
+HOST_INTERFACE="eth0"  # Replace with your host's network interface
 
-# Check if running as root
+# Check for root permissions
 if [ "$EUID" -ne 0 ]; then
-  echo "Please run as root"
+  echo "Please run as root or with sudo."
   exit 1
 fi
 
-# Create backup directory if it doesn't exist
-mkdir -p $BACKUP_DIR
-
-# Backup function for VM XML configuration
+# Create a backup of the current VM configuration
 backup_vm_config() {
-  echo "Backing up current VM configuration..."
-  virsh dumpxml $VM_NAME > "$BACKUP_DIR/${VM_NAME}_backup.xml"
+  echo "Creating a backup of the VM configuration..."
+  virsh dumpxml $VM_NAME > "/var/backups/kvm-config/${VM_NAME}_backup.xml"
   if [ $? -ne 0 ]; then
     echo "Failed to backup VM configuration. Exiting."
     exit 1
   fi
-  echo "Backup saved to $BACKUP_DIR/${VM_NAME}_backup.xml"
+  echo "Backup created at /var/backups/kvm-config/${VM_NAME}_backup.xml"
 }
 
-# Verify bridge existence
+# Get the current MAC address of the host
+get_host_mac() {
+  ip link show $HOST_INTERFACE | awk '/ether/ {print $2}'
+}
+
+# Setup the network bridge if it doesn't exist
 setup_bridge() {
   if ! ip link show "$BRIDGE_NAME" &> /dev/null; then
     echo "Creating bridge $BRIDGE_NAME..."
@@ -39,61 +40,77 @@ setup_bridge() {
   fi
 }
 
-# Get host MAC address
-get_host_mac() {
-  ip link show $HOST_INTERFACE | awk '/ether/ {print $2}'
-}
-
-# Function to swap MAC addresses
+# Swap MAC addresses between the host and VM
 swap_mac_addresses() {
   echo "Swapping MAC addresses between host and VM..."
-  TEMP_MAC="02:00:00:00:00:01"
+  TEMP_MAC="02:00:00:00:00:01"  # Temporary MAC to avoid conflict
+  HOST_MAC=$(get_host_mac)
+
+  # Temporarily change host MAC to avoid conflict
+  ip link set dev $HOST_INTERFACE down
   ip link set dev $HOST_INTERFACE address $TEMP_MAC
-  sleep 1
+  ip link set dev $HOST_INTERFACE up
 
-  # Set specified MAC for VM
-  virsh domif-setmac $VM_NAME vnet0 $SPECIFIED_MAC
+  # Set the VM's MAC address to the original host MAC
+  virsh domif-setmac $VM_NAME vnet0 $HOST_MAC
 
-  # Set original MAC for host to specified one
+  # Set host MAC to the specified VM MAC
+  ip link set dev $HOST_INTERFACE down
   ip link set dev $HOST_INTERFACE address $SPECIFIED_MAC
+  ip link set dev $HOST_INTERFACE up
+
+  echo "MAC addresses have been swapped. Host now uses $SPECIFIED_MAC."
+  echo "VM now uses $HOST_MAC."
 }
 
-# Ensure VM is using a bridged interface
+# Ensure the VM is using the bridge
 configure_vm_network() {
-  echo "Ensuring VM is in bridged mode..."
+  echo "Configuring VM to use bridged mode..."
   CURRENT_BRIDGE=$(virsh domiflist $VM_NAME | awk '/bridge/ {print $3}')
 
   if [ "$CURRENT_BRIDGE" != "$BRIDGE_NAME" ]; then
-    echo "VM is not using the correct bridge. Configuring..."
+    echo "Configuring VM network interface to use bridge $BRIDGE_NAME..."
     virsh detach-interface $VM_NAME network --type bridge 2>/dev/null
     virsh attach-interface $VM_NAME bridge $BRIDGE_NAME --model virtio --mac $SPECIFIED_MAC
     if [ $? -ne 0 ]; then
-      echo "Failed to attach the bridge interface to the VM."
+      echo "Failed to attach bridge interface to VM. Exiting."
       exit 1
     fi
-    echo "VM has been successfully attached to bridge $BRIDGE_NAME."
+    echo "VM is now using bridge $BRIDGE_NAME with MAC $SPECIFIED_MAC."
   else
-    echo "VM is already using bridge $BRIDGE_NAME."
+    echo "VM is already using the correct bridge."
   fi
 }
 
-# Main script execution
-echo "Starting KVM bridged mode setup..."
+# DHCP Configuration Hint
+configure_dhcp() {
+  echo "Configuring DHCP for VM..."
+  # Ensure the VM gets a new IP from DHCP. This step may require custom network service restarts or interactions.
+  echo "Consider restarting the network service on the VM to obtain an IP address using DHCP (if applicable)."
+  echo "Alternatively, you can configure a static IP if you know the network parameters."
+}
+
+# Main Execution
+echo "Starting the setup for swapping MAC addresses and configuring KVM bridged mode..."
+
+# Ensure necessary directories exist for backups
+mkdir -p /var/backups/kvm-config
 
 backup_vm_config
 setup_bridge
 
 HOST_MAC=$(get_host_mac)
-echo "Host MAC Address: $HOST_MAC"
-echo "Specified VM MAC Address: $SPECIFIED_MAC"
+echo "Current Host MAC Address: $HOST_MAC"
+echo "Desired VM MAC Address: $SPECIFIED_MAC"
 
 if [ "$HOST_MAC" == "$SPECIFIED_MAC" ]; then
-  echo "Host MAC address matches the specified VM MAC address. Swapping..."
+  echo "Host MAC address matches the specified MAC for the VM. Swapping addresses..."
   swap_mac_addresses
 else
-  echo "MAC addresses are different. Proceeding with configuration..."
+  echo "Host and specified VM MAC addresses differ. Configuring VM directly..."
+  configure_vm_network
 fi
 
-configure_vm_network
+configure_dhcp
 
-echo "Configuration complete. Please verify network settings."
+echo "Configuration completed. Verify network connectivity and make adjustments if necessary."
